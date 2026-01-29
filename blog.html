@@ -21,10 +21,34 @@
     <!-- 博客区域 -->
     <section class="blog">
         <div class="container">
-            <h2 class="section-title">📝 技术博客</h2>
-            <p>分享技术笔记、项目经验与学习心得，记录成长历程。</p>
-            <div class="articles-grid" id="articles-container">
-                <!-- 文章列表将通过JavaScript动态加载 -->
+            <div class="blog-content">
+                <h2 class="section-title">📝 技术博客</h2>
+                <p>分享技术笔记、项目经验与学习心得，记录成长历程。</p>
+                
+                <!-- 搜索栏 -->
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="搜索文章..." class="search-input">
+                    <button id="search-button" class="search-button">搜索</button>
+                    <button id="reset-button" class="reset-button">重置</button>
+                </div>
+                
+                <!-- 搜索结果提示 -->
+                <div id="search-result" class="search-result"></div>
+                
+                <!-- 排序选项 -->
+                <div class="sort-container">
+                    <label for="sort-select" class="sort-label">排序方式：</label>
+                    <select id="sort-select" class="sort-select">
+                        <option value="date-desc">日期（最新优先）</option>
+                        <option value="date-asc">日期（最早优先）</option>
+                        <option value="title-asc">标题（A-Z）</option>
+                        <option value="title-desc">标题（Z-A）</option>
+                    </select>
+                </div>
+                
+                <div class="articles-grid" id="articles-container">
+                    <!-- 文章列表将通过JavaScript动态加载 -->
+                </div>
             </div>
         </div>
     </section>

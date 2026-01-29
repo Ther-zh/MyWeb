@@ -113,8 +113,15 @@ def update_script(articles):
     with open(SCRIPT_FILE, 'r', encoding='utf-8') as f:
         script_content = f.read()
     
+    # 处理文章内容中的换行符
+    for article in articles:
+        if 'content' in article:
+            # 将内容转换为单行字符串，使用\n表示换行
+            article['content'] = article['content'].replace('\n', '\\n')
+    
     # 生成新的articles数组
     articles_json = json.dumps(articles, ensure_ascii=False, indent=4)
+    # 修复json.dumps生成的字符串格式，确保content字段使用正确的转义
     articles_array = f'const articles = {articles_json};'
     
     # 替换现有articles数组
