@@ -8,6 +8,7 @@
 import os
 import re
 import json
+import subprocess
 from datetime import datetime
 
 # 配置
@@ -133,6 +134,41 @@ def update_script(articles):
         f.write(new_script_content)
 
 
+def git_push():
+    """
+    执行Git推送操作
+    """
+    try:
+        print("\n开始执行Git推送操作...")
+        
+        # 检查Git状态
+        print("检查Git状态...")
+        subprocess.run(['git', 'status'], check=True, shell=True)
+        
+        # 添加所有修改的文件
+        print("添加修改的文件...")
+        subprocess.run(['git', 'add', '.'], check=True, shell=True)
+        
+        # 提交修改
+        commit_message = f"更新文章 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        print(f"提交修改: {commit_message}")
+        subprocess.run(['git', 'commit', '-m', commit_message], check=True, shell=True)
+        
+        # 推送到远程仓库
+        print("推送到远程仓库...")
+        subprocess.run(['git', 'push'], check=True, shell=True)
+        
+        print("Git推送操作完成！")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Git操作失败: {e}")
+        print("请检查Git环境和仓库配置")
+        return False
+    except Exception as e:
+        print(f"发生错误: {e}")
+        return False
+
+
 def main():
     """
     主函数
@@ -146,6 +182,13 @@ def main():
     # 更新脚本
     update_script(articles)
     print("文章更新完成！")
+    
+    # 询问是否执行Git推送
+    push_confirm = input("是否执行Git推送操作？(y/n): ")
+    if push_confirm.lower() == 'y':
+        git_push()
+    else:
+        print("跳过Git推送操作")
 
 
 if __name__ == '__main__':
