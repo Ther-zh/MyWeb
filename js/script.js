@@ -317,10 +317,14 @@ function loadArticleDetail() {
 function parseMarkdown(markdown) {
     console.log('解析Markdown内容:', markdown.substring(0, 100) + '...');
     
+    // 先处理代码块，避免被其他规则干扰
+    markdown = markdown.replace(/```(.*?)```/gs, '<pre><code>$1</code></pre>');
+    
     // 标题解析
-    markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-    markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-    markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+    markdown = markdown.replace(/^(#{1,6})\s+(.*?)$/gim, function(match, hashes, content) {
+        const level = hashes.length;
+        return `<h${level}>${content}</h${level}>`;
+    });
     
     // 加粗解析
     markdown = markdown.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -328,13 +332,25 @@ function parseMarkdown(markdown) {
     // 斜体解析
     markdown = markdown.replace(/\*(.*?)\*/g, '<em>$1</em>');
     
-    // 段落解析
-    markdown = markdown.replace(/^(?!<h[1-6]>)(.*$)/gim, function(match) {
+    // 行内代码解析
+    markdown = markdown.replace(/`(.*?)`/g, '<code>$1</code>');
+    
+    // 列表解析
+    // 先处理无序列表
+    markdown = markdown.replace(/^(?:-|\*)\s+(.*?)$/gim, '<li>$1</li>');
+    // 处理有序列表
+    markdown = markdown.replace(/^\d+\.\s+(.*?)$/gim, '<li>$1</li>');
+    // 包裹列表项
+    markdown = markdown.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
+    
+    // 段落解析 - 确保只匹配真正的段落
+    markdown = markdown.replace(/^(?!<h[1-6]>)(?!<ul>)(?!<li>)(?!<pre>)(?!<code>)(.*?)$/gim, function(match) {
         if (match.trim()) {
             return '<p>' + match + '</p>';
         }
         return match;
     });
+
     
     // 列表解析
     markdown = markdown.replace(/^- (.*$)/gim, '<li>$1</li>');
