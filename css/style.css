@@ -310,6 +310,36 @@ nav {
     display: block;
 }
 
+/* 专栏筛选样式 */
+.column-filter-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0 2rem;
+}
+
+.column-filter-label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.column-filter-select {
+    padding: 0.75rem 1.25rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.column-filter-select:focus {
+    outline: none;
+    border-color: #4facfe;
+    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+}
+
 /* 排序选项样式 */
 .sort-container {
     display: flex;
@@ -372,9 +402,23 @@ nav {
     opacity: 0.8;
 }
 
+.article-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
 .article-date {
     font-size: 0.9rem;
     color: #666;
+}
+
+.article-column {
+    font-size: 0.9rem;
+    color: #4facfe;
+    font-weight: 500;
 }
 
 /* 文章详情页面样式 */
