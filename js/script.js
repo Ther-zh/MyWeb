@@ -5,7 +5,7 @@ const columns = [
 
 const articles = [
     {
-        "id": "pytorch_20260205014107",
+        "id": "pytorch_20260205031252",
         "title": "PyTorch框架学习（一）：核心模块初识与训练流程全解析",
         "date": "2026-02-05",
         "summary": "在PyTorch中，各个模块的设计遵循“分工明确、协同工作”的原则，核心目标是支持从数据加载到模型训练、推理的全流程。理解模块间的依赖关系和训练流程的逻辑，能帮你更清晰地掌握PyTorch的使用框架。",
@@ -14,7 +14,7 @@ const articles = [
         "path": "Pytorch/PyTorch框架学习（一）：核心模块初识与训练流程全解析"
     },
     {
-        "id": "pytorchtensorautograd_20260205014107",
+        "id": "pytorchtensorautograd_20260205031252",
         "title": "PyTorch框架学习（二）：张量（Tensor）与自动求导（autograd）详解",
         "date": "2026-02-05",
         "summary": "本期内容，我们深入拆解了张量（Tensor）与自动求导（autograd）的核心原理与实操方法，明确了张量作为底层数据结构的核心作用，掌握了自动求导的“标记-正向传播-反向传播-梯度清零”全流程，也解决了初学者最易踩的高频误区。这些内容，是后续学习数据处理、模型构建的基础——只有熟练掌握张量的操作和自动求导的逻辑，才能真正理解模型训练的底层机制，避免“只会调API，不懂原理”的问题。",
@@ -23,7 +23,7 @@ const articles = [
         "path": "Pytorch/PyTorch框架学习（二）：张量（Tensor）与自动求导（autograd）详解"
     },
     {
-        "id": "kl_20260205014107",
+        "id": "kl_20260205031252",
         "title": "信息量、信息熵、KL散度交叉熵损失",
         "date": "2026-01-30",
         "summary": "信息量、信息熵、KL散度交叉熵损失",
@@ -461,30 +461,94 @@ function loadArticleDetail() {
 
 // 增强的Markdown解析函数（使用正则表达式直接处理）
 function parseMarkdown(markdown) {
-    console.log('解析Markdown内容:', markdown.substring(0, 100) + '...');
+    console.log('解析Markdown内容:', markdown.substring(0, 200) + '...');
     
-    // 1. 先处理代码块，避免被其他规则干扰
-    markdown = markdown.replace(/```(.*?)```/gs, '<pre><code>$1</code></pre>');
+    // 1. 先保存代码块内容，使用占位符替换
+    const codeBlocks = [];
+    let codeBlockIndex = 0;
+    markdown = markdown.replace(/```([\s\S]*?)```/g, (_, content) => {
+        const placeholder = `__CODE_BLOCK_${codeBlockIndex}__`;
+        codeBlocks[codeBlockIndex] = content;
+        codeBlockIndex++;
+        return placeholder;
+    });
+    
+    // 2. 处理标题
+    // 处理正常标题，不匹配代码块内的内容（代码块已被替换为占位符）
+    markdown = markdown.replace(/^(#{1,6})\s+(.*?)$/gim, function(match, hashes, content) {
+        const level = hashes.length;
+        return `<h${level}>${content}</h${level}>`;
+    });
     
     // 2. 处理LaTeX公式，避免被其他规则干扰
     // 先保存行间公式
     const blockFormulas = [];
     let blockFormulaIndex = 0;
+    console.log('处理行间公式前的内容:', markdown.substring(0, 200) + '...');
     markdown = markdown.replace(/\$\$([\s\S]*?)\$\$/g, (_, content) => {
+        console.log('找到行间公式:', content.trim());
         const placeholder = `__BLOCK_FORMULA_${blockFormulaIndex}__`;
         blockFormulas[blockFormulaIndex] = content.trim();
         blockFormulaIndex++;
         return placeholder;
     });
+    console.log('处理行间公式后的内容:', markdown.substring(0, 200) + '...');
     // 保存行内公式
     const inlineFormulas = [];
     let inlineFormulaIndex = 0;
-    markdown = markdown.replace(/(?<!\\)\$(?!\$)([^\$]+?)(?<!\\)\$(?!\$)/g, (_, content) => {
+    console.log('处理行内公式前的内容:', markdown.substring(0, 200) + '...');
+    // 修改正则表达式，使用更简单的模式匹配行内公式
+    let result = '';
+    let i = 0;
+    while (i < markdown.length) {
+        // 查找行内公式的开始标记 $（不是 $$）
+        let start = markdown.indexOf('$', i);
+        if (start === -1) {
+            result += markdown.substring(i);
+            break;
+        }
+        // 检查是否是 $$ 而不是 $
+        if (start + 1 < markdown.length && markdown[start + 1] === '$') {
+            result += markdown.substring(i, start + 2);
+            i = start + 2;
+            continue;
+        }
+        // 检查是否是转义的 $
+        if (start > 0 && markdown[start - 1] === '\\') {
+            result += markdown.substring(i, start + 1);
+            i = start + 1;
+            continue;
+        }
+        // 查找行内公式的结束标记 $（不是 $$）
+        let end = markdown.indexOf('$', start + 1);
+        if (end === -1) {
+            result += markdown.substring(i);
+            break;
+        }
+        // 检查是否是 $$ 而不是 $
+        if (end + 1 < markdown.length && markdown[end + 1] === '$') {
+            result += markdown.substring(i, end + 2);
+            i = end + 2;
+            continue;
+        }
+        // 检查是否是转义的 $
+        if (end > 0 && markdown[end - 1] === '\\') {
+            result += markdown.substring(i, end + 1);
+            i = end + 1;
+            continue;
+        }
+        // 提取公式内容
+        const content = markdown.substring(start + 1, end);
+        console.log('找到行内公式:', content.trim());
+        // 保存公式并替换为占位符
         const placeholder = `__INLINE_FORMULA_${inlineFormulaIndex}__`;
         inlineFormulas[inlineFormulaIndex] = content.trim();
         inlineFormulaIndex++;
-        return placeholder;
-    });
+        result += markdown.substring(i, start) + placeholder;
+        i = end + 1;
+    }
+    markdown = result;
+    console.log('处理行内公式后的内容:', markdown.substring(0, 200) + '...');
     
     // 3. 处理图片语法
     // 直接替换图片语法为img标签
@@ -539,12 +603,6 @@ function parseMarkdown(markdown) {
         
         tableHtml += '</table>';
         return tableHtml;
-    });
-    
-    // 5. 处理标题
-    markdown = markdown.replace(/^(#{1,6})\s+(.*?)$/gim, function(match, hashes, content) {
-        const level = hashes.length;
-        return `<h${level}>${content}</h${level}>`;
     });
     
     // 6. 处理加粗
@@ -616,6 +674,11 @@ function parseMarkdown(markdown) {
     markdown = markdown.replace(/\s+/g, ' ');
     markdown = markdown.replace(/\s*<\/p>/g, '</p>');
     markdown = markdown.replace(/<p>\s*/g, '<p>');
+    
+    // 14. 恢复代码块
+    markdown = markdown.replace(/__CODE_BLOCK_([0-9]+)__/g, (_, index) => {
+        return `<pre><code>${codeBlocks[index]}</code></pre>`;
+    });
     
     console.log('解析结果:', markdown.substring(0, 100) + '...');
     return markdown;
