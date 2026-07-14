@@ -1,5 +1,5 @@
 // ============================================
-// 知帆博客 - 星空宇宙交互脚本
+// Zhihang Zheng 博客 - 星空宇宙交互脚本
 // ============================================
 
 // 博客文章数据
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (currentFileName === 'index.html' || currentFileName === '' || currentFileName === '/') {
         const heroTitle = document.querySelector('.hero h1');
         if (heroTitle) {
-            new TypewriterEffect(heroTitle, 'Hi，我是知帆', 150);
+            new TypewriterEffect(heroTitle, 'Hi，我是Zhihang Zheng', 150);
         }
     }
     
