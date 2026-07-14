@@ -1,3 +1,7 @@
+// ============================================
+// 知帆博客 - 星空宇宙交互脚本
+// ============================================
+
 // 博客文章数据
 const columns = [
     "Pytorch"
@@ -5,7 +9,7 @@ const columns = [
 
 const articles = [
     {
-        "id": "pytorch_20260210042537",
+        "id": "pytorch_20260512005224",
         "title": "PyTorch框架学习（一）：核心模块初识与训练流程全解析",
         "date": "2026-02-05",
         "summary": "在PyTorch中，各个模块的设计遵循“分工明确、协同工作”的原则，核心目标是支持从数据加载到模型训练、推理的全流程。理解模块间的依赖关系和训练流程的逻辑，能帮你更清晰地掌握PyTorch的使用框架。",
@@ -14,7 +18,7 @@ const articles = [
         "path": "Pytorch/PyTorch框架学习（一）：核心模块初识与训练流程全解析"
     },
     {
-        "id": "pytorchtensorautograd_20260210042537",
+        "id": "pytorchtensorautograd_20260512005224",
         "title": "PyTorch框架学习（二）：张量（Tensor）与自动求导（autograd）详解",
         "date": "2026-02-05",
         "summary": "本期内容，我们深入拆解了张量（Tensor）与自动求导（autograd）的核心原理与实操方法，明确了张量作为底层数据结构的核心作用，掌握了自动求导的“标记-正向传播-反向传播-梯度清零”全流程，也解决了初学者最易踩的高频误区。这些内容，是后续学习数据处理、模型构建的基础——只有熟练掌握张量的操作和自动求导的逻辑，才能真正理解模型训练的底层机制，避免“只会调API，不懂原理”的问题。",
@@ -23,7 +27,7 @@ const articles = [
         "path": "Pytorch/PyTorch框架学习（二）：张量（Tensor）与自动求导（autograd）详解"
     },
     {
-        "id": "kl_20260210042537",
+        "id": "kl_20260512005224",
         "title": "信息量、信息熵、KL散度交叉熵损失",
         "date": "2026-01-30",
         "summary": "信息量、信息熵、KL散度交叉熵损失",
@@ -33,83 +37,311 @@ const articles = [
     }
 ];
 
-// 页面加载完成后执行
+// ============================================
+// 粒子星空系统
+// ============================================
+
+class ParticleStarfield {
+    constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        if (!this.canvas) return;
+        
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.shootingStars = [];
+        this.mouse = { x: null, y: null };
+        this.isMobile = this.checkMobile();
+        
+        this.init();
+        this.animate();
+        this.setupEventListeners();
+    }
+    
+    checkMobile() {
+        return window.innerWidth <= 768 || 'ontouchstart' in window;
+    }
+    
+    init() {
+        this.resizeCanvas();
+        
+        const particleCount = this.isMobile ? 50 : 120;
+        this.particles = [];
+        
+        for (let i = 0; i < particleCount; i++) {
+            this.particles.push(this.createParticle());
+        }
+    }
+    
+    createParticle() {
+        return {
+            x: Math.random() * this.canvas.width,
+            y: Math.random() * this.canvas.height,
+            size: Math.random() * 2 + 0.5,
+            speedX: (Math.random() - 0.5) * 0.3,
+            speedY: (Math.random() - 0.5) * 0.3,
+            opacity: Math.random() * 0.8 + 0.2,
+            twinkleSpeed: Math.random() * 0.02 + 0.01,
+            twinkleDirection: Math.random() > 0.5 ? 1 : -1
+        };
+    }
+    
+    createShootingStar() {
+        if (this.isMobile) return null;
+        
+        return {
+            x: Math.random() * this.canvas.width,
+            y: Math.random() * this.canvas.height * 0.5,
+            length: Math.random() * 80 + 40,
+            speed: Math.random() * 8 + 6,
+            angle: Math.PI / 4 + Math.random() * 0.2 - 0.1,
+            opacity: 1
+        };
+    }
+    
+    resizeCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+    
+    setupEventListeners() {
+        window.addEventListener('resize', () => {
+            this.resizeCanvas();
+            if (this.checkMobile() !== this.isMobile) {
+                this.isMobile = this.checkMobile();
+                this.init();
+            }
+        });
+        
+        this.canvas.parentElement.addEventListener('mousemove', (e) => {
+            this.mouse.x = e.clientX;
+            this.mouse.y = e.clientY;
+        });
+        
+        this.canvas.parentElement.addEventListener('mouseleave', () => {
+            this.mouse.x = null;
+            this.mouse.y = null;
+        });
+        
+        if (!this.isMobile) {
+            setInterval(() => {
+                if (Math.random() > 0.7 && this.shootingStars.length < 2) {
+                    this.shootingStars.push(this.createShootingStar());
+                }
+            }, 3000);
+        }
+    }
+    
+    updateParticles() {
+        this.particles.forEach(particle => {
+            particle.x += particle.speedX;
+            particle.y += particle.speedY;
+            
+            particle.opacity += particle.twinkleSpeed * particle.twinkleDirection;
+            if (particle.opacity >= 1 || particle.opacity <= 0.2) {
+                particle.twinkleDirection *= -1;
+            }
+            
+            if (particle.x < 0) particle.x = this.canvas.width;
+            if (particle.x > this.canvas.width) particle.x = 0;
+            if (particle.y < 0) particle.y = this.canvas.height;
+            if (particle.y > this.canvas.height) particle.y = 0;
+        });
+    }
+    
+    updateShootingStars() {
+        this.shootingStars = this.shootingStars.filter(star => {
+            star.x += Math.cos(star.angle) * star.speed;
+            star.y += Math.sin(star.angle) * star.speed;
+            star.opacity -= 0.015;
+            star.length *= 0.99;
+            
+            return star.opacity > 0 && star.length > 5;
+        });
+    }
+    
+    drawParticles() {
+        this.particles.forEach(particle => {
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
+            this.ctx.fill();
+            
+            if (particle.size > 1.5) {
+                this.ctx.beginPath();
+                this.ctx.arc(particle.x, particle.y, particle.size * 2, 0, Math.PI * 2);
+                this.ctx.fillStyle = `rgba(79, 172, 254, ${particle.opacity * 0.2})`;
+                this.ctx.fill();
+            }
+        });
+    }
+    
+    drawShootingStars() {
+        this.shootingStars.forEach(star => {
+            const gradient = this.ctx.createLinearGradient(
+                star.x, star.y,
+                star.x - Math.cos(star.angle) * star.length,
+                star.y - Math.sin(star.angle) * star.length
+            );
+            gradient.addColorStop(0, `rgba(255, 255, 255, ${star.opacity})`);
+            gradient.addColorStop(1, `rgba(79, 172, 254, 0)`);
+            
+            this.ctx.beginPath();
+            this.ctx.moveTo(star.x, star.y);
+            this.ctx.lineTo(
+                star.x - Math.cos(star.angle) * star.length,
+                star.y - Math.sin(star.angle) * star.length
+            );
+            this.ctx.strokeStyle = gradient;
+            this.ctx.lineWidth = 2;
+            this.ctx.lineCap = 'round';
+            this.ctx.stroke();
+        });
+    }
+    
+    drawMouseGlow() {
+        if (this.mouse.x === null || this.mouse.y === null) return;
+        
+        const gradient = this.ctx.createRadialGradient(
+            this.mouse.x, this.mouse.y, 0,
+            this.mouse.x, this.mouse.y, 150
+        );
+        gradient.addColorStop(0, 'rgba(79, 172, 254, 0.15)');
+        gradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.05)');
+        gradient.addColorStop(1, 'transparent');
+        
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+    
+    animate() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        this.updateParticles();
+        this.updateShootingStars();
+        
+        this.drawMouseGlow();
+        this.drawParticles();
+        this.drawShootingStars();
+        
+        requestAnimationFrame(() => this.animate());
+    }
+}
+
+// ============================================
+// 打字机效果
+// ============================================
+
+class TypewriterEffect {
+    constructor(element, text, speed = 100) {
+        this.element = element;
+        this.text = text;
+        this.speed = speed;
+        this.index = 0;
+        this.cursor = null;
+        
+        this.init();
+    }
+    
+    init() {
+        this.element.textContent = '';
+        this.createCursor();
+        this.type();
+    }
+    
+    createCursor() {
+        this.cursor = document.createElement('span');
+        this.cursor.className = 'typing-cursor';
+        this.element.parentNode.appendChild(this.cursor);
+    }
+    
+    type() {
+        if (this.index < this.text.length) {
+            this.element.textContent += this.text.charAt(this.index);
+            this.index++;
+            setTimeout(() => this.type(), this.speed);
+        } else {
+            this.stopCursor();
+        }
+    }
+    
+    stopCursor() {
+        setTimeout(() => {
+            if (this.cursor) {
+                this.cursor.style.animation = 'none';
+                this.cursor.style.opacity = '1';
+            }
+        }, 2000);
+    }
+}
+
+// ============================================
+// 页面初始化与路由
+// ============================================
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('===== 页面加载完成，开始初始化 =====');
     
-    // 检查当前页面
+    const particleStarfield = new ParticleStarfield('particles-canvas');
+    
     const currentPath = window.location.pathname;
     const currentFileName = currentPath.split('/').pop();
     
     console.log('当前页面路径:', currentPath);
     console.log('当前页面文件名:', currentFileName);
     
-    // 检查articles数组是否存在
+    if (currentFileName === 'index.html' || currentFileName === '' || currentFileName === '/') {
+        const heroTitle = document.querySelector('.hero h1');
+        if (heroTitle) {
+            new TypewriterEffect(heroTitle, 'Hi，我是知帆', 150);
+        }
+    }
+    
     console.log('articles变量是否存在:', typeof articles !== 'undefined');
     if (typeof articles !== 'undefined') {
         console.log('articles数组长度:', articles.length);
     }
     
-    // 检查columns数组是否存在
     console.log('columns变量是否存在:', typeof columns !== 'undefined');
     if (typeof columns !== 'undefined') {
         console.log('columns数组长度:', columns.length);
     }
     
-    // 如果是博客页面，加载文章列表
     if (currentFileName === 'blog.html' || currentFileName === 'blog') {
         console.log('===== 检测到博客页面，开始加载文章列表 =====');
         loadArticles();
         
-        // 初始化专栏筛选
         initColumnFilter();
         
-        // 为搜索按钮添加事件监听器
         const searchButton = document.getElementById('search-button');
-        console.log('搜索按钮元素:', searchButton);
         if (searchButton) {
             searchButton.addEventListener('click', searchArticles);
-            console.log('已为搜索按钮添加事件监听器');
         }
         
-        // 为搜索输入框添加回车事件监听器
         const searchInput = document.getElementById('search-input');
-        console.log('搜索输入框元素:', searchInput);
         if (searchInput) {
             searchInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     searchArticles();
                 }
             });
-            console.log('已为搜索输入框添加回车事件监听器');
         }
         
-        // 为重置按钮添加事件监听器
         const resetButton = document.getElementById('reset-button');
-        console.log('重置按钮元素:', resetButton);
         if (resetButton) {
             resetButton.addEventListener('click', resetSearch);
-            console.log('已为重置按钮添加事件监听器');
         }
         
-        // 为排序选择框添加事件监听器
         const sortSelect = document.getElementById('sort-select');
-        console.log('排序选择框元素:', sortSelect);
         if (sortSelect) {
             sortSelect.addEventListener('change', sortArticles);
-            console.log('已为排序选择框添加事件监听器');
         }
         
-        // 为专栏筛选添加事件监听器
         const columnFilter = document.getElementById('column-filter');
-        console.log('专栏筛选元素:', columnFilter);
         if (columnFilter) {
             columnFilter.addEventListener('change', filterArticlesByColumn);
-            console.log('已为专栏筛选添加事件监听器');
         }
     }
     
-    // 如果是文章详情页面，加载文章内容
     if (currentFileName === 'article.html') {
         console.log('===== 检测到文章详情页面，开始加载文章内容 =====');
         loadArticleDetail();
@@ -122,27 +354,21 @@ document.addEventListener('DOMContentLoaded', function() {
 function initColumnFilter() {
     console.log('===== 开始初始化专栏筛选 =====');
     
-    // 检查columns数组是否存在
     if (typeof columns === 'undefined') {
         console.error('columns数组未定义');
         return;
     }
     
-    // 获取专栏筛选元素
     const columnFilter = document.getElementById('column-filter');
-    console.log('专栏筛选元素:', columnFilter);
     if (!columnFilter) {
         console.error('未找到 column-filter 元素');
         return;
     }
     
-    // 清空现有选项（保留"全部专栏"）
     while (columnFilter.options.length > 1) {
         columnFilter.remove(1);
     }
     
-    // 添加专栏选项
-    console.log('开始添加专栏选项');
     columns.forEach((column, index) => {
         console.log(`添加专栏 ${index + 1}:`, column);
         const option = document.createElement('option');
@@ -158,7 +384,6 @@ function initColumnFilter() {
 function filterArticlesByColumn() {
     console.log('===== 开始按专栏筛选文章 =====');
     
-    // 获取选择的专栏
     const columnFilter = document.getElementById('column-filter');
     if (!columnFilter) {
         console.error('未找到 column-filter 元素');
@@ -168,23 +393,17 @@ function filterArticlesByColumn() {
     const selectedColumn = columnFilter.value;
     console.log('选择的专栏:', selectedColumn);
     
-    // 筛选文章
     let filteredArticles;
     if (selectedColumn === 'all') {
-        // 显示所有文章
         filteredArticles = articles;
     } else {
-        // 显示指定专栏的文章
         filteredArticles = articles.filter(article => article.column === selectedColumn);
     }
     
     console.log('筛选后的文章数量:', filteredArticles.length);
-    console.log('筛选后的文章数据:', filteredArticles);
     
-    // 加载筛选后的文章
     loadArticles(filteredArticles);
     
-    // 更新搜索结果提示
     const searchResult = document.getElementById('search-result');
     if (searchResult) {
         if (selectedColumn === 'all') {
@@ -203,67 +422,41 @@ function filterArticlesByColumn() {
 function loadArticles(filteredArticles = null) {
     console.log('===== 开始加载文章列表 =====');
     
-    // 检查articles数组是否存在
-    console.log('articles变量是否存在:', typeof articles !== 'undefined');
     if (typeof articles === 'undefined') {
         console.error('articles数组未定义');
         return;
     }
     
-    // 检查articles数组内容
-    console.log('原始articles数组长度:', articles.length);
-    console.log('原始articles数组内容:', articles);
-    
-    // 获取文章容器
     const articlesContainer = document.getElementById('articles-container');
-    console.log('articles-container元素:', articlesContainer);
     if (!articlesContainer) {
         console.error('未找到 articles-container 元素');
         return;
     }
     
-    // 使用过滤后的文章或原始文章
     const displayArticles = filteredArticles || articles;
     
     console.log('要显示的文章数量:', displayArticles.length);
-    console.log('要显示的文章数据:', displayArticles);
     
-    // 清空容器
-    console.log('清空文章容器');
     articlesContainer.innerHTML = '';
     
-    // 添加加载动画
-    console.log('添加加载动画');
     articlesContainer.innerHTML = '<div class="loading"></div>';
     
-    // 模拟异步加载
-    console.log('开始模拟异步加载');
     setTimeout(() => {
-        console.log('异步加载完成，开始显示文章');
-        // 清空加载动画
         articlesContainer.innerHTML = '';
         
-        // 检查文章数组
         if (displayArticles.length === 0) {
-            console.log('文章数量为0，显示"暂无文章"');
-            articlesContainer.innerHTML = '<p>暂无文章</p>';
+            articlesContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">暂无文章</p>';
             return;
         }
         
-        // 遍历文章数据，生成文章卡片
-        console.log('开始遍历文章数据，生成文章卡片');
         displayArticles.forEach((article, index) => {
             console.log(`加载文章 ${index + 1}:`, article.title);
-            console.log(`文章ID:`, article.id);
-            console.log(`文章摘要:`, article.summary);
-            console.log(`文章日期:`, article.date);
-            console.log(`文章专栏:`, article.column);
             
             const articleCard = document.createElement('a');
             articleCard.href = `article.html?id=${article.id}`;
-            articleCard.className = 'article-card';
+            articleCard.className = 'article-card fade-in';
+            articleCard.style.animationDelay = `${index * 0.1}s`;
             
-            // 生成文章卡片HTML，包含专栏信息
             let cardHtml = `
                 <h3>${article.title}</h3>
                 <p>${article.summary}</p>
@@ -271,7 +464,6 @@ function loadArticles(filteredArticles = null) {
                     <div class="article-date">${article.date}</div>
             `;
             
-            // 如果文章属于某个专栏，添加专栏标签
             if (article.column) {
                 cardHtml += `
                     <div class="article-column">专栏：${article.column}</div>
@@ -283,10 +475,7 @@ function loadArticles(filteredArticles = null) {
             `;
             
             articleCard.innerHTML = cardHtml;
-            
-            console.log('创建文章卡片:', articleCard);
             articlesContainer.appendChild(articleCard);
-            console.log('文章卡片添加到容器');
         });
         
         console.log('文章加载完成');
@@ -306,14 +495,12 @@ function searchArticles() {
     const searchTerm = searchInput.value.trim().toLowerCase();
     
     if (!searchTerm) {
-        // 搜索词为空，显示所有文章
         searchResult.textContent = '';
         searchResult.classList.remove('show');
         loadArticles();
         return;
     }
     
-    // 过滤文章
     const filteredArticles = articles.filter(article => {
         return (
             article.title.toLowerCase().includes(searchTerm) ||
@@ -322,11 +509,9 @@ function searchArticles() {
         );
     });
     
-    // 显示搜索结果
     searchResult.textContent = `找到 ${filteredArticles.length} 篇相关文章`;
     searchResult.classList.add('show');
     
-    // 加载过滤后的文章
     loadArticles(filteredArticles);
 }
 
@@ -340,14 +525,11 @@ function resetSearch() {
         return;
     }
     
-    // 清空搜索输入
     searchInput.value = '';
     
-    // 隐藏搜索结果
     searchResult.textContent = '';
     searchResult.classList.remove('show');
     
-    // 加载所有文章
     loadArticles();
 }
 
@@ -361,30 +543,23 @@ function sortArticles() {
     
     const sortValue = sortSelect.value;
     
-    // 创建文章副本
     const sortedArticles = [...articles];
     
-    // 根据排序值排序
     switch (sortValue) {
         case 'date-desc':
-            // 按日期降序
             sortedArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
             break;
         case 'date-asc':
-            // 按日期升序
             sortedArticles.sort((a, b) => new Date(a.date) - new Date(b.date));
             break;
         case 'title-asc':
-            // 按标题升序
             sortedArticles.sort((a, b) => a.title.localeCompare(b.title));
             break;
         case 'title-desc':
-            // 按标题降序
             sortedArticles.sort((a, b) => b.title.localeCompare(a.title));
             break;
     }
     
-    // 加载排序后的文章
     loadArticles(sortedArticles);
 }
 
@@ -396,43 +571,33 @@ function loadArticleDetail() {
         return;
     }
     
-    // 清空容器
     articleDetailContainer.innerHTML = '';
     
-    // 添加加载动画
     articleDetailContainer.innerHTML = '<div class="loading"></div>';
     
-    // 获取文章ID
     const urlParams = new URLSearchParams(window.location.search);
     const articleId = urlParams.get('id');
     
     console.log('文章ID:', articleId);
     
-    // 模拟异步加载
     setTimeout(() => {
-        // 查找文章
         const article = articles.find(a => a.id === articleId);
         
         console.log('找到文章:', article);
         
         if (article) {
-            // 清空加载动画
             articleDetailContainer.innerHTML = '';
             
-            // 生成文章内容
             const articleElement = document.createElement('div');
-            articleElement.className = 'article-detail';
+            articleElement.className = 'article-detail fade-in';
             
-            // 解析Markdown内容
             const parsedContent = parseMarkdown(article.content);
             
-            // 生成文章元信息，包含专栏信息
             let metaHtml = `
                 <div class="article-meta">
                     <span>发布日期：${article.date}</span>
             `;
             
-            // 如果文章属于某个专栏，添加专栏信息
             if (article.column) {
                 metaHtml += `
                     <span>专栏：${article.column}</span>
@@ -453,8 +618,7 @@ function loadArticleDetail() {
             
             articleDetailContainer.appendChild(articleElement);
         } else {
-            // 文章不存在
-            articleDetailContainer.innerHTML = '<h2>文章不存在</h2><p>抱歉，您访问的文章不存在。</p>';
+            articleDetailContainer.innerHTML = '<h2 style="color: var(--accent-blue);">文章不存在</h2><p style="color: var(--text-secondary);">抱歉，您访问的文章不存在。</p>';
         }
     }, 500);
 }
@@ -464,58 +628,43 @@ function parseMarkdown(markdown) {
     console.log('解析Markdown内容:', markdown.substring(0, 200) + '...');
     
     // 1. 先处理LaTeX公式，避免被其他规则干扰
-    // 先保存行间公式
     const blockFormulas = [];
     let blockFormulaIndex = 0;
-    console.log('处理行间公式前的内容:', markdown.substring(0, 200) + '...');
-    // 使用正则表达式的捕获组来提取公式内容，确保反斜杠被正确保留
     markdown = markdown.replace(/\$\$([\s\S]*?)\$\$/g, (match, content) => {
-        console.log('找到行间公式:', content.trim());
         const placeholder = `__BLOCK_FORMULA_${blockFormulaIndex}__`;
-        // 保存原始公式内容，确保反斜杠被正确保留
         blockFormulas[blockFormulaIndex] = content.trim();
         blockFormulaIndex++;
         return placeholder;
     });
-    console.log('处理行间公式后的内容:', markdown.substring(0, 200) + '...');
     
-    // 保存行内公式
     const inlineFormulas = [];
     let inlineFormulaIndex = 0;
-    console.log('处理行内公式前的内容:', markdown.substring(0, 200) + '...');
     
-    // 使用更简单的方法来处理行内公式，确保反斜杠被正确保留
-    // 手动遍历字符串，查找行内公式的开始和结束标记
     let result = '';
     let i = 0;
     while (i < markdown.length) {
-        // 查找行内公式的开始标记 $（不是 $$）
         let start = markdown.indexOf('$', i);
         if (start === -1) {
             result += markdown.substring(i);
             break;
         }
         
-        // 检查是否是 $$ 而不是 $
         if (start + 1 < markdown.length && markdown[start + 1] === '$') {
             result += markdown.substring(i, start + 2);
             i = start + 2;
             continue;
         }
         
-        // 检查是否是转义的 $
         if (start > 0 && markdown[start - 1] === '\\') {
             result += markdown.substring(i, start + 1);
             i = start + 1;
             continue;
         }
         
-        // 查找行内公式的结束标记 $（不是 $$）
         let end = start + 1;
         let found = false;
         while (end < markdown.length) {
             if (markdown[end] === '$' && markdown[end - 1] !== '\\') {
-                // 检查是否是 $$
                 if (end + 1 < markdown.length && markdown[end + 1] === '$') {
                     end += 2;
                     continue;
@@ -531,18 +680,8 @@ function parseMarkdown(markdown) {
             break;
         }
         
-        // 提取公式内容
         let content = markdown.substring(start + 1, end);
-        console.log('找到行内公式:', content);
-        
-        // 保存原始公式内容，不做任何修改
-        // 直接保存到数组中
-        
-        console.log('修复后的行内公式:', content);
-        
-        // 保存公式并替换为占位符
         const placeholder = `__INLINE_FORMULA_${inlineFormulaIndex}__`;
-        // 直接保存原始内容
         inlineFormulas[inlineFormulaIndex] = content;
         inlineFormulaIndex++;
         
@@ -550,13 +689,8 @@ function parseMarkdown(markdown) {
         i = end + 1;
     }
     markdown = result;
-    console.log('处理行内公式后的内容:', markdown.substring(0, 200) + '...');
     
-    // 临时测试：检查提取的公式内容
-    console.log('提取的行间公式:', blockFormulas);
-    console.log('提取的行内公式:', inlineFormulas);
-    
-    // 2. 保存代码块内容，使用占位符替换
+    // 2. 保存代码块内容
     const codeBlocks = [];
     let codeBlockIndex = 0;
     markdown = markdown.replace(/```([\s\S]*?)```/g, (_, content) => {
@@ -567,30 +701,23 @@ function parseMarkdown(markdown) {
     });
     
     // 3. 处理标题
-    // 处理正常标题，不匹配代码块内的内容（代码块已被替换为占位符）
     markdown = markdown.replace(/^(#{1,6})\s+(.*?)$/gim, function(match, hashes, content) {
         const level = hashes.length;
         return `<h${level}>${content}</h${level}>`;
     });
     
     // 4. 处理图片语法
-    // 直接替换图片语法为img标签
     markdown = markdown.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, function(match, alt, src) {
-        // 确保图片路径正确
-        // 检查src是否已经包含articles/前缀
         let imgSrc;
         if (src.startsWith('articles/')) {
-            // 已经包含articles/前缀，直接使用
             imgSrc = src;
         } else {
-            // 不包含articles/前缀，添加前缀
             imgSrc = `articles/${src}`;
         }
         return `<img src="${imgSrc}" alt="${alt}" style="max-width: 100%; height: auto; margin: 1em 0;">`;
     });
     
     // 5. 处理表格语法
-    // 匹配完整的表格结构
     const tableRegex = /(?:^\|.*\|$\s*)+/gm;
     markdown = markdown.replace(tableRegex, (tableContent) => {
         const rows = tableContent.trim().split('\n').filter(row => row.trim());
@@ -598,28 +725,25 @@ function parseMarkdown(markdown) {
         
         let tableHtml = '<table style="border-collapse: collapse; width: 100%; margin: 1em 0;">';
         
-        // 处理表头
         const headerRow = rows[0];
         const headerCells = headerRow.split('|').filter(cell => cell !== '').map(cell => cell.trim());
-        tableHtml += '<tr style="border: 1px solid #ddd;">';
+        tableHtml += '<tr style="border: 1px solid rgba(79, 172, 254, 0.3);">';
         headerCells.forEach(cell => {
-            tableHtml += `<th style="border: 1px solid #ddd; padding: 8px; text-align: left;">${cell}</th>`;
+            tableHtml += `<th style="border: 1px solid rgba(79, 172, 254, 0.3); padding: 8px; text-align: left;">${cell}</th>`;
         });
         tableHtml += '</tr>';
         
-        // 跳过可能的分隔行
         let startRow = 1;
         if (rows[1] && rows[1].match(/^\|\s*[:\-]+\s*\|/)) {
             startRow = 2;
         }
         
-        // 处理表格内容行
         for (let i = startRow; i < rows.length; i++) {
             const row = rows[i];
             const cells = row.split('|').filter(cell => cell !== '').map(cell => cell.trim());
-            tableHtml += '<tr style="border: 1px solid #ddd;">';
+            tableHtml += '<tr style="border: 1px solid rgba(255, 255, 255, 0.1);">';
             cells.forEach(cell => {
-                tableHtml += `<td style="border: 1px solid #ddd; padding: 8px;">${cell}</td>`;
+                tableHtml += `<td style="border: 1px solid rgba(255, 255, 255, 0.1); padding: 8px;">${cell}</td>`;
             });
             tableHtml += '</tr>';
         }
@@ -641,11 +765,8 @@ function parseMarkdown(markdown) {
     markdown = markdown.replace(/`(.*?)`/g, '<code>$1</code>');
     
     // 10. 处理列表
-    // 处理无序列表
     markdown = markdown.replace(/^-\s+(.*?)$/gim, '<li>$1</li>');
-    // 处理有序列表
     markdown = markdown.replace(/^\d+\.\s+(.*?)$/gim, '<li>$1</li>');
-    // 包裹列表
     markdown = markdown.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>');
     
     // 11. 处理段落
@@ -658,8 +779,6 @@ function parseMarkdown(markdown) {
     
     // 12. 清理多余的标签和空格
     markdown = markdown.replace(/<\/p>\s*<p>/g, '</p><p>');
-    // 注意：不要使用全局空格替换，因为会破坏LaTeX公式的格式
-    // 只清理段落标签周围的空格
     markdown = markdown.replace(/\s*<\/p>/g, '</p>');
     markdown = markdown.replace(/<p>\s*/g, '<p>');
     
@@ -668,21 +787,18 @@ function parseMarkdown(markdown) {
         return `<pre><code>${codeBlocks[index]}</code></pre>`;
     });
     
-    // 14. 恢复并渲染LaTeX公式（最后执行，避免被其他操作干扰）
-    // 渲染行间公式
+    // 14. 恢复并渲染LaTeX公式
     markdown = markdown.replace(/__BLOCK_FORMULA_([0-9]+)__/g, (_, index) => {
         try {
             const formula = blockFormulas[index];
-            if (formula) {
-                console.log('渲染行间公式:', formula);
-                // 确保反斜杠被正确处理
+            if (formula && typeof katex !== 'undefined') {
                 return katex.renderToString(formula, {
                     displayMode: true,
                     throwOnError: false,
                     strict: 'ignore'
                 });
             } else {
-                return '$$' + index + '$$';
+                return '$$' + formula + '$$';
             }
         } catch (e) {
             console.error('渲染行间公式错误:', e);
@@ -690,25 +806,14 @@ function parseMarkdown(markdown) {
         }
     });
     
-    // 渲染行内公式
     markdown = markdown.replace(/__INLINE_FORMULA_([0-9]+)__/g, (_, index) => {
         try {
             let formula = inlineFormulas[index];
             if (formula) {
-                console.log('渲染行内公式:', formula);
-                
-                // 清理公式内容，移除换行符和多余的空格
                 formula = formula.replace(/\n/g, '').trim();
                 
-                console.log('处理后的行内公式:', formula);
-                
-                // 智能修复LaTeX公式，添加缺失的反斜杠
-                let latexFormula = formula;
-                
-                // 特殊处理：直接查找常见的缺失反斜杠的命令
-                // 注意：需要按顺序处理，确保修复正确
                 const latexCommandFixes = {
-                    'ightarrow': '\\rightarrow',
+                    'rightarrow': '\\rightarrow',
                     'rac': '\\frac',
                     'sum': '\\sum',
                     'partial': '\\partial',
@@ -746,22 +851,21 @@ function parseMarkdown(markdown) {
                     'sqrt': '\\sqrt'
                 };
                 
-                // 直接替换缺失反斜杠的命令
                 Object.entries(latexCommandFixes).forEach(([broken, fixed]) => {
-                    latexFormula = latexFormula.replace(new RegExp(broken, 'g'), fixed);
+                    formula = formula.replace(new RegExp(broken, 'g'), fixed);
                 });
                 
-                // 清理公式中可能的多余空格和特殊字符
-                latexFormula = latexFormula.replace(/\s+/g, ' ').trim();
+                formula = formula.replace(/\s+/g, ' ').trim();
                 
-                console.log('修复后的行内公式:', latexFormula);
-                
-                // 尝试直接渲染
-                return katex.renderToString(latexFormula, {
-                    displayMode: false,
-                    throwOnError: false,
-                    strict: 'ignore'
-                });
+                if (typeof katex !== 'undefined') {
+                    return katex.renderToString(formula, {
+                        displayMode: false,
+                        throwOnError: false,
+                        strict: 'ignore'
+                    });
+                } else {
+                    return '$' + formula + '$';
+                }
             } else {
                 return '$' + index + '$';
             }
